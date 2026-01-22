@@ -1,0 +1,36 @@
+name: Update Glide Data
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # تشغيل كل 6 ساعات
+  workflow_dispatch:      # زر تشغيل يدوي
+
+jobs:
+  update_csv:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Libraries
+        run: pip install google-generativeai
+
+      - name: Run Scraper
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scraper.py
+
+      - name: Save CSV to Repo
+        run: |
+          git config --global user.name "CyberX-Bot"
+          git config --global user.email "bot@cyberx.com"
+          git add market_data.csv
+          git commit -m "Update Market Data" || echo "No changes"
+          git push
